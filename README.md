@@ -28,6 +28,10 @@ Two shell scripts live in `~/.claude/hooks/`:
 
 The installer registers both as hooks in `~/.claude/settings.json`.
 
+## Credits
+
+Spinner verbs sourced from [deepakness.com/raw/claude-spinner-verbs](https://deepakness.com/raw/claude-spinner-verbs/).
+
 ## Uninstall
 
 Remove the two entries from `~/.claude/settings.json` under `hooks.PreToolUse` and `hooks.Stop`, then delete `~/.claude/hooks/slack-status.sh` and `~/.claude/hooks/slack-status-clear.sh`.
