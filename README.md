@@ -1,12 +1,12 @@
 # slack-status-claude-code-spinner-verbs
 
-A Claude Code hook that updates your Slack status in real time with Claude's whimsical spinner verbs — "Architecting...", "Razzle-dazzling...", "Combobulating..." — one of 170 picked at random every time Claude does something. Clears automatically when Claude stops.
+A Claude Code hook that updates your Slack status in real time with Claude's whimsical spinner verbs — "Architecting...", "Razzle-dazzling...", "Combobulating..." — one of 187 picked at random every time Claude does something. Clears automatically when Claude stops.
 
 ## Install
 
 ```bash
 git clone https://github.com/schwarzjakob/slack-status-claude-code-spinner-verbs.git
-cd slack-spinner-verbs
+cd slack-status-claude-code-spinner-verbs
 bash install.sh
 ```
 
