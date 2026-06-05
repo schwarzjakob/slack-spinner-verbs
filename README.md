@@ -24,9 +24,19 @@ The script will ask for your Slack token and wire everything up. Restart Claude 
 Two shell scripts live in `~/.claude/hooks/`:
 
 - `slack-status.sh` — fires on every Claude tool use, picks a random verb, sets your Slack status for 2 minutes
-- `slack-status-clear.sh` — fires when Claude stops, clears your status
+- `slack-status-clear.sh` — fires when Claude stops, clears your status — **but only once your last active session has stopped**
 
 The installer registers both as hooks in `~/.claude/settings.json`.
+
+### Multiple sessions
+
+If you run several Claude Code sessions at once, the status stays lit until the
+**last** one finishes — a session stopping no longer switches the light off while
+the others are still working. Each active session is tracked by a small marker
+file under `~/.cache/claude-slack-status/active/`; the status clears only when
+none remain. A session that exits without firing its `Stop` hook (e.g. a crash)
+leaves a stale marker that is pruned automatically after 30 minutes, and Slack's
+own 2-minute status expiry is the final backstop.
 
 ## Credits
 
