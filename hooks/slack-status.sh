@@ -4,6 +4,13 @@
 
 SLACK_TOKEN="__SLACK_TOKEN__"
 
+# ── Emoji style ──────────────────────────────────────────────────────────────
+# How the status emoji is picked:
+#   "verb"  → a different emoji matched to each spinner verb (💃 🍳 🚀 🧠 …). Playful, varied.
+#   "robot" → always 🤖 :robot_face:. Consistent, so teammates learn "that emoji = coding".
+# Anything other than "robot" behaves as "verb".
+EMOJI_STYLE="verb"
+
 # ── Multi-session registry ───────────────────────────────────────────────────
 # Each actively-working session drops a file here. The status is only cleared
 # (by slack-status-clear.sh) once the LAST session leaves, so one session
@@ -109,6 +116,10 @@ case "$VERB" in
   *)
     EMOJI="robot_face" ;;
 esac
+
+# Classic mode: ignore the per-verb mapping and always use the robot, so the
+# status emoji stays constant and instantly recognisable.
+[ "$EMOJI_STYLE" = "robot" ] && EMOJI="robot_face"
 
 curl -s -X POST "https://slack.com/api/users.profile.set" \
   -H "Authorization: Bearer $SLACK_TOKEN" \

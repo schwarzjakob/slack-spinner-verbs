@@ -38,6 +38,16 @@ none remain. A session that exits without firing its `Stop` hook (e.g. a crash)
 leaves a stale marker that is pruned automatically after 30 minutes, and Slack's
 own 2-minute status expiry is the final backstop.
 
+### Emoji style
+
+By default each verb gets a matching emoji (💃 🍳 🚀 🧠 …). If you'd rather have a
+single, constant emoji — so teammates instantly recognise "that means they're
+coding" — open `~/.claude/hooks/slack-status.sh` and set:
+
+```bash
+EMOJI_STYLE="robot"   # was "verb"
+```
+
 ## Credits
 
 Spinner verbs sourced from [deepakness.com/raw/claude-spinner-verbs](https://deepakness.com/raw/claude-spinner-verbs/).
