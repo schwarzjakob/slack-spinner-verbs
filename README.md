@@ -48,6 +48,22 @@ coding" — open `~/.claude/hooks/slack-status.sh` and set:
 EMOJI_STYLE="robot"   # was "verb"
 ```
 
+### GitHub status (optional)
+
+The same busy light can mirror to your **GitHub profile status** (the emoji +
+message on your profile). It's off by default; `install.sh` asks whether to enable
+it. It reuses the [`gh` CLI](https://cli.github.com/) for auth, which must be
+logged in with the `user` scope:
+
+```bash
+gh auth refresh -h github.com -s user
+```
+
+Once enabled, each verb shows on GitHub too (a couple of emoji are translated to
+their GitHub names), and it clears alongside Slack when your last session stops.
+If `gh` is missing or lacks the scope, the GitHub calls are skipped and only Slack
+updates. Note: a GitHub profile status is **public and account-wide**.
+
 ## Credits
 
 Spinner verbs sourced from [deepakness.com/raw/claude-spinner-verbs](https://deepakness.com/raw/claude-spinner-verbs/).
