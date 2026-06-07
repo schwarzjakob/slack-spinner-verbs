@@ -5,6 +5,10 @@
 
 SLACK_TOKEN="__SLACK_TOKEN__"
 
+# Mirror clears to your GitHub profile status too (see slack-status.sh).
+# install.sh flips this to "on" if you opt in.
+GITHUB_STATUS=""
+
 REG="$HOME/.cache/claude-slack-status/active"
 TTL_MIN=30
 mkdir -p "$REG"
@@ -32,5 +36,11 @@ curl -s -X POST "https://slack.com/api/users.profile.set" \
   -H "Content-Type: application/json" \
   -d '{"profile":{"status_text":"","status_emoji":"","status_expiration":0}}' \
   > /dev/null 2>&1 &
+
+# Clear the GitHub status too, if enabled.
+if [ "$GITHUB_STATUS" = "on" ] && command -v gh >/dev/null 2>&1; then
+  gh api graphql -f query='mutation { changeUserStatus(input: { emoji: null, message: null, expiresAt: null }) { status { message } } }' \
+    > /dev/null 2>&1 &
+fi
 
 exit 0

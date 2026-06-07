@@ -35,6 +35,21 @@ fi
 
 echo ""
 
+# ── Step 1b: GitHub status (optional) ────────────────────────────────────────
+GITHUB_STATUS_VAL=""
+read -rp "Also mirror the status to your GitHub profile? (needs the gh CLI with 'user' scope) [y/N] " GH_ENABLE
+if [[ "$GH_ENABLE" =~ ^[Yy]$ ]]; then
+  GITHUB_STATUS_VAL="on"
+  if command -v gh >/dev/null 2>&1; then
+    gh auth status 2>/dev/null | grep -q "'user'" \
+      || echo "  ⚠  gh is missing the 'user' scope — run: gh auth refresh -h github.com -s user"
+  else
+    echo "  ⚠  gh CLI not found — install it, then: gh auth refresh -h github.com -s user"
+  fi
+fi
+
+echo ""
+
 # ── Step 2: Copy hook scripts ────────────────────────────────────────────────
 echo "Installing hooks to $HOOK_DIR ..."
 mkdir -p "$HOOK_DIR"
@@ -43,7 +58,9 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 for SCRIPT in slack-status.sh slack-status-clear.sh; do
   DEST="$HOOK_DIR/$SCRIPT"
-  sed "s|__SLACK_TOKEN__|$SLACK_TOKEN|g" "$SCRIPT_DIR/hooks/$SCRIPT" > "$DEST"
+  sed -e "s|__SLACK_TOKEN__|$SLACK_TOKEN|g" \
+      -e "s|^GITHUB_STATUS=\"\"|GITHUB_STATUS=\"$GITHUB_STATUS_VAL\"|" \
+      "$SCRIPT_DIR/hooks/$SCRIPT" > "$DEST"
   chmod +x "$DEST"
   echo "  ✓ $SCRIPT"
 done

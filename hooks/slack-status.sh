@@ -11,6 +11,14 @@ SLACK_TOKEN="__SLACK_TOKEN__"
 # Anything other than "robot" behaves as "verb".
 EMOJI_STYLE="verb"
 
+# ── GitHub status (optional mirror) ──────────────────────────────────────────
+# Set GITHUB_STATUS="on" to also push the verb to your GitHub profile status.
+# Auth is reused from the gh CLI, which must be logged in with the 'user' scope:
+#   gh auth refresh -h github.com -s user
+# If gh is missing or lacks the scope, the GitHub call is skipped — Slack still
+# updates. (install.sh can turn this on for you.)
+GITHUB_STATUS=""
+
 # ── Multi-session registry ───────────────────────────────────────────────────
 # Each actively-working session drops a file here. The status is only cleared
 # (by slack-status-clear.sh) once the LAST session leaves, so one session
@@ -126,5 +134,19 @@ curl -s -X POST "https://slack.com/api/users.profile.set" \
   -H "Content-Type: application/json" \
   -d "{\"profile\":{\"status_text\":\"$VERB...\",\"status_emoji\":\":$EMOJI:\",\"status_expiration\":$(( $(date +%s) + 120 ))}}" \
   > /dev/null 2>&1 &
+
+# Mirror to GitHub if enabled. GitHub uses gemoji shortcodes, which differ slightly
+# from Slack's — translate the few that don't match (party_blob doesn't exist there).
+if [ "$GITHUB_STATUS" = "on" ] && command -v gh >/dev/null 2>&1; then
+  case "$EMOJI" in
+    robot_face) GH_EMOJI="robot" ;;
+    party_blob) GH_EMOJI="partying_face" ;;
+    *)          GH_EMOJI="$EMOJI" ;;
+  esac
+  GH_EPOCH=$(( $(date +%s) + 120 ))
+  GH_EXP=$(date -u -d "@$GH_EPOCH" +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || date -u -r "$GH_EPOCH" +%Y-%m-%dT%H:%M:%SZ)
+  gh api graphql -f query="$(printf 'mutation { changeUserStatus(input: { emoji: ":%s:", message: "%s", expiresAt: "%s", limitedAvailability: false }) { status { message } } }' "$GH_EMOJI" "$VERB..." "$GH_EXP")" \
+    > /dev/null 2>&1 &
+fi
 
 exit 0
