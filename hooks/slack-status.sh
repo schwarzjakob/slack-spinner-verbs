@@ -4,6 +4,39 @@
 
 SLACK_TOKEN="__SLACK_TOKEN__"
 
+# ── Emoji style ──────────────────────────────────────────────────────────────
+# How the status emoji is picked:
+#   "verb"  → a different emoji matched to each spinner verb (💃 🍳 🚀 🧠 …). Playful, varied.
+#   "robot" → always 🤖 :robot_face:. Consistent, so teammates learn "that emoji = coding".
+# Anything other than "robot" behaves as "verb".
+EMOJI_STYLE="verb"
+
+# ── Multi-session registry ───────────────────────────────────────────────────
+# Each actively-working session drops a file here. The status is only cleared
+# (by slack-status-clear.sh) once the LAST session leaves, so one session
+# finishing doesn't switch the light off while others are still working. A file
+# from a session that died without firing Stop goes stale and is pruned after
+# $TTL_MIN minutes.
+REG="$HOME/.cache/claude-slack-status/active"
+TTL_MIN=30
+mkdir -p "$REG"
+
+# Identify this session from the hook's stdin JSON (a field common to every hook
+# event); fall back to a PID if absent. The `-t 0` guard reads stdin only when
+# it's actually piped in, so a manual TTY run can't hang — and it avoids depending
+# on `timeout`, which isn't installed by default on macOS.
+INPUT=""
+[ -t 0 ] || INPUT="$(cat)"
+if [[ "$INPUT" =~ \"session_id\"[[:space:]]*:[[:space:]]*\"([^\"]+)\" ]]; then
+  SID="${BASH_REMATCH[1]}"
+else
+  SID="pid-$PPID"
+fi
+
+# Prune sessions that died without firing Stop, then mark this one active.
+find "$REG" -type f -mmin +"$TTL_MIN" -delete 2>/dev/null
+touch "$REG/$SID"
+
 VERBS=(
   "Accomplishing" "Actioning" "Actualizing" "Architecting" "Baking" "Beaming"
   "Beboppin'" "Befuddling" "Billowing" "Blanching" "Bloviating" "Boogieing"
@@ -83,6 +116,10 @@ case "$VERB" in
   *)
     EMOJI="robot_face" ;;
 esac
+
+# Classic mode: ignore the per-verb mapping and always use the robot, so the
+# status emoji stays constant and instantly recognisable.
+[ "$EMOJI_STYLE" = "robot" ] && EMOJI="robot_face"
 
 curl -s -X POST "https://slack.com/api/users.profile.set" \
   -H "Authorization: Bearer $SLACK_TOKEN" \
